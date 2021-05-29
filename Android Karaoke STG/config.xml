@@ -1,0 +1,93 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.40">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.7.2"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.7.2">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.83">
+    <script>def NotifyLINE(msg) {
+    def token = &quot;VmkcmkKUxIj653YwNtc1RAKQuaSLvTw0BKJEwIh3v1R&quot;
+    def jobName = currentBuild.fullDisplayName
+    def buildStatus = currentBuild.currentResult
+    def duration = currentBuild.durationString
+    def url = &apos;https://notify-api.line.me/api/notify&apos;
+    def message = &quot;Job name:${jobName} Duration:${duration} Message:${msg} Buildstatus:${buildStatus}&quot;
+    sh &quot;curl ${url} -H \&quot;Authorization: Bearer ${token}\&quot; -F message=\&quot;${message}\&quot;&quot;
+}
+
+pipeline {
+    agent any
+    
+    stages {
+        stage(&apos;Start katalon testsuite&apos;) {
+            
+            steps{
+                
+                sh &apos;&apos;&apos; 
+                
+                cd /Users/wisdomvast/git/KatalonAIS_Karaoke
+                
+                git fetch
+                
+                git pull --rebase --autostash https://whachiragorn:13Ossqwerty@github.com/whachiragorn/KatalonAIS_Karaoke.git
+                
+                cd &quot;/Users/wisdomvast/Downloads/Katalon_Studio_Engine_MacOS-7.8.2/Katalon Studio Engine.app/Contents/MacOS&quot;
+
+                ./katalonc -noSplash -runMode=console -projectPath=&quot;/Users/wisdomvast/git/KatalonAIS_Karaoke/KatalonAIS_Karaoke.prj&quot; -retry=0 -testSuitePath=&quot;Test Suites/Staging/Android/Android Regression Test STG&quot; -executionProfile=&quot;default&quot; -deviceId=&quot;emulator-5554&quot; -browserType=&quot;Android&quot; -apiKey=&quot;3e463994-7f55-443a-ac15-f898bc25e972&quot; -apiKeyOnPremise=&quot;6ab50e88-1833-4e59-854b-779b1ba122e4&quot; --config -proxy.auth.option=NO_PROXY -proxy.system.option=NO_PROXY -proxy.system.applyToDesiredCapabilities=true 2&gt;resultNotiAndroidSTG.txt
+                
+                cd &quot;/Users/wisdomvast/git/KatalonAIS_Karaoke&quot;
+                
+                git config --global user.name &quot;Whachiragorn Tongcote&quot;
+                git config --global user.email &quot;whachiragorn_13oss@hotmail.com&quot;
+                
+                git status
+                git add .
+                git commit -m &quot;This commit from Jenkins&quot;
+                git push -u https://whachiragorn:13Ossqwerty@github.com/whachiragorn/KatalonAIS_Karaoke.git master
+
+                &apos;&apos;&apos;
+            }
+        }
+    }
+    post{
+        success{
+            NotifyLINE(&quot;Running Jenkins pipeline success please check in developer@wisdomvast.com&quot;)
+        }
+        failure{
+            NotifyLINE(&quot;Some Testcase Failure&quot;)
+            sh &apos;&apos;&apos;
+            cd &quot;/Users/wisdomvast/Downloads/Katalon_Studio_Engine_MacOS-7.8.2/Katalon Studio Engine.app/Contents/MacOS&quot;
+                        
+            #!/bin/bash
+            response=&quot;&quot;
+            while IFS= read -r line; do
+            # Reading each line
+            response=&quot;${response}
+            ${line}&quot;
+            done &lt; resultNotiAndroidSTG.txt
+            response=&quot;${response}
+            ${line}&quot;
+
+            curl https://notify-api.line.me/api/notify -H &quot;Authorization: Bearer VmkcmkKUxIj653YwNtc1RAKQuaSLvTw0BKJEwIh3v1R&quot; -F message=&quot;$response&quot;
+
+            &apos;&apos;&apos;
+        }
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

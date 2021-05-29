@@ -1,0 +1,96 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.40">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@1.7.2"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@1.7.2">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <hudson.triggers.TimerTrigger>
+          <spec>0 9 * * 1-5</spec>
+        </hudson.triggers.TimerTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@2.83">
+    <script>def NotifyLINE(msg) {
+    def token = &quot;VmkcmkKUxIj653YwNtc1RAKQuaSLvTw0BKJEwIh3v1R&quot;
+    def jobName = currentBuild.fullDisplayName
+    def buildStatus = currentBuild.currentResult
+    def duration = currentBuild.durationString
+    def url = &apos;https://notify-api.line.me/api/notify&apos;
+    def message = &quot;Job name:${jobName} Duration:${duration} Message:${msg} Buildstatus:${buildStatus}&quot;
+    sh &quot;curl ${url} -H \&quot;Authorization: Bearer ${token}\&quot; -F message=\&quot;${message}\&quot;&quot;
+}
+
+pipeline {
+    agent any
+    
+    stages {
+        stage(&apos;Start katalon testsuite&apos;) {
+            steps{
+                        
+                sh &apos;&apos;&apos;
+                
+                cd /Users/wisdomvast/git/KatalonAIS_Karaoke
+                
+                git fetch
+                
+                git pull --rebase --autostash https://whachiragorn:13Ossqwerty@github.com/whachiragorn/KatalonAIS_Karaoke.git
+                
+                cd &quot;/Users/wisdomvast/Downloads/Katalon_Studio_Engine_MacOS-7.9.1/Katalon Studio Engine.app/Contents/MacOS&quot;
+
+                ./katalonc -noSplash -runMode=console -projectPath=&quot;/Users/wisdomvast/git/KatalonAIS_Karaoke/KatalonAIS_Karaoke.prj&quot; -retry=0 -testSuitePath=&quot;Test Suites/Staging/iOS/iOS Regression Test PRD&quot; -executionProfile=&quot;default&quot; -deviceId=&quot;EF473CD6-6531-48FD-B9C4-B5225DF20A0A&quot; -browserType=&quot;iOS&quot; -apiKey=&quot;b4bc9aa9-ecdf-41cc-9ff0-e2e2604c63ce&quot; -apiKeyOnPremise=&quot;18cd53f2-c196-4958-ace4-043a48df7c06&quot; --config -proxy.auth.option=NO_PROXY -proxy.system.option=NO_PROXY -proxy.system.applyToDesiredCapabilities=true 2&gt;resultNotiiOSPRD.txt
+                killall Simulator
+                cd /Users/wisdomvast/git/KatalonAIS_Karaoke
+                
+                git config --global user.name &quot;Whachiragorn Tongcote&quot;
+                git config --global user.email &quot;whachiragorn_13oss@hotmail.com&quot;
+                
+                git status
+                git add .
+                git commit -m &quot;This commit from Jenkins&quot;
+                git push -u https://whachiragorn:13Ossqwerty@github.com/whachiragorn/KatalonAIS_Karaoke.git master
+               
+                &apos;&apos;&apos;
+            }
+        }
+    }
+    post{
+        success{
+            NotifyLINE(&quot;Running Jenkins pipeline success please check in developer@wisdomvast.com&quot;)
+        }
+        failure{
+            NotifyLINE(&quot;Some Testcase Failure&quot;)
+            sh &apos;&apos;&apos;
+            cd &quot;/Users/wisdomvast/Downloads/Katalon_Studio_Engine_MacOS-7.9.1/Katalon Studio Engine.app/Contents/MacOS&quot;
+                        
+            #!/bin/bash
+            response=&quot;&quot;
+            while IFS= read -r line; do
+            # Reading each line
+            response=&quot;${response}
+            ${line}&quot;
+            done &lt; resultNotiiOSPRD.txt
+            response=&quot;${response}
+            ${line}&quot;
+
+            curl https://notify-api.line.me/api/notify -H &quot;Authorization: Bearer VmkcmkKUxIj653YwNtc1RAKQuaSLvTw0BKJEwIh3v1R&quot; -F message=&quot;$response&quot;
+
+            &apos;&apos;&apos;
+        }
+    }
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
